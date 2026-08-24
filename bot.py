@@ -16,6 +16,7 @@
 
 import os
 import re
+import csv
 import logging
 from datetime import datetime, timedelta
 from typing import Optional
@@ -51,6 +52,13 @@ TRANSPORT = "ТЦК бусик №65,66,47,53,17 "  # например: "мет�
 
 # Ближайшая к вам остановка/станция
 NEAREST_STOP = "остановка Дубовая роща"  # впишите реальное название
+
+# Ваш личный Telegram ID — узнать его можно, написав боту @userinfobot.
+# Нужен, чтобы команда /users была доступна только вам, а не всем подряд.
+ADMIN_ID = 432613414  # замените на своё число, например 123456789
+ 
+# Файл, куда будут сохраняться все обращения к боту (кто, когда, что написал)
+LOG_FILE = "bot_log.csv"
 
 # =========================================================
 
@@ -103,6 +111,25 @@ def build_schedule_reply(target: datetime) -> str:
         f"🚌 БУСИК ТЦК: {TRANSPORT}\n"
         f"📍 ОстановОчка: {NEAREST_STOP}"
     )
+
+
+def log_interaction(update: Update) -> None:
+    """Дописывает строку в CSV-файл с логом: время, пользователь, сообщение."""
+    user = update.effective_user
+    text = update.message.text or ""
+    file_exists = os.path.isfile(LOG_FILE)
+ 
+    with open(LOG_FILE, mode="a", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(["timestamp", "user_id", "username", "first_name", "message"])
+        writer.writerow([
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            user.id if user else "",
+            user.username if user else "",
+            user.first_name if user else "",
+            text,
+        ])
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
