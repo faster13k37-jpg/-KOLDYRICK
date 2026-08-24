@@ -98,7 +98,7 @@ def build_schedule_reply(target: datetime) -> str:
 
     return (
         f"Плюсь вайб, нужно быть на месте к {target.strftime('%H:%M')}{day_note}.\n\n"
-        f"⏰ Проснуться и еще злой побыть чуть😡: {wake_time.strftime('%H:%M')}\n"
+        f"⏰ Проснуться и полежать злой: {wake_time.strftime('%H:%M')}\n"
         f"🚪 Выйти из дома: {leave_time.strftime('%H:%M')}\n"
         f"🚌 БУСИК ТЦК: {TRANSPORT}\n"
         f"📍 ОстановОчка: {NEAREST_STOP}"
