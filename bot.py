@@ -6,6 +6,8 @@ Telegram-бот «Во сколько вставать» — бесплатна�
     мне надо в премьер завтра к 12:30
     виктория к 18:00
     почтовая к 14:20
+    лиза к 19:00
+    лизина квартира к 20:00
     на работу
     на работу к 09:30
     адрес: Московское шоссе, 33 к 17:00
@@ -141,6 +143,33 @@ DESTINATIONS = {
         "routes": "17, 53, 65, 66 (ориентир)",
         "transit_minutes": 28,
         # Почтовая длиннее одной точки, поэтому берём чуть более консервативно.
+        "walk_after_minutes": 5,
+        "reliability_buffer": 5,
+    },
+    "liza": {
+        "name": "Лиза — квартира",
+        "address": "Рязань, Быстрецкая улица, 18к2",
+        "aliases": (
+            "лиза",
+            "лизка",
+            "лизя",
+            "лизина квартира",
+            "квартира лизы",
+            "к лизе",
+            "к лизке",
+            "к лизе домой",
+            "домой к лизе",
+            "быстрецкая 18к2",
+            "быстрецкая 18 к2",
+            "быстрецкая 18 корпус 2",
+            "быстрецкая улица 18к2",
+            "быстрецкая улица 18 к2",
+        ),
+        "kind": "transit",
+        "exit_stop": "ближайшая остановка к Быстрецкой, 18к2",
+        "routes": "городской транспорт (ориентир)",
+        # Персональная средняя оценка для маршрута к Лизе.
+        "transit_minutes": 15,
         "walk_after_minutes": 5,
         "reliability_buffer": 5,
     },
@@ -287,6 +316,10 @@ def detect_destination(text: str) -> Optional[Destination]:
     if explicit:
         address = _clean_address(explicit.group(1))
         if address:
+            norm = normalize_text(address)
+            if "быстрецкая" in norm and re.search(r"(?<!\d)18\s*(?:к|корп(?:ус)?\.?\s*)?2(?!\d)", norm):
+                data = DESTINATIONS["liza"]
+                return Destination("liza", data["name"], data["address"], data["kind"])
             return Destination("custom", address, address, "transit", custom=True)
 
     # Сначала основные места — чтобы "Московское шоссе, 21" можно было узнать как Премьер
@@ -310,6 +343,9 @@ def detect_destination(text: str) -> Optional[Destination]:
             if "шереметьевская" in norm and re.search(r"(?<!\d)11(?!\d)", norm):
                 data = DESTINATIONS["work"]
                 return Destination("work", data["name"], data["address"], "work")
+            if "быстрецкая" in norm and re.search(r"(?<!\d)18\s*(?:к|корп(?:ус)?\.?\s*)?2(?!\d)", norm):
+                data = DESTINATIONS["liza"]
+                return Destination("liza", data["name"], data["address"], data["kind"])
             return Destination("custom", address, address, "transit", custom=True)
 
     return None
@@ -430,7 +466,7 @@ def estimate_custom_route(address: str) -> RouteEstimate:
 
 
 def calculate_route_estimate(destination: Destination) -> RouteEstimate:
-    if destination.key in ("premier", "victoria", "pochtovaya"):
+    if destination.key in ("premier", "victoria", "pochtovaya", "liza"):
         return preset_route_estimate(destination)
     return estimate_custom_route(destination.address)
 
@@ -560,6 +596,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• «прем к 15:00»\n"
             "• «виктория завтра к 18:30»\n"
             "• «почтовая к 14:00»\n"
+            "• «лиза к 19:00»\n"
             "• «на работу»\n"
             "• «адрес: Московское шоссе, 33 к 17:00»"
         )
@@ -593,6 +630,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• «прем к 15:00»\n"
         "• «виктория к 18:00»\n"
         "• «почтовая к 14:30»\n"
+        "• «лиза к 19:00» / «лизина квартира к 20:00»\n"
         "• «на работу» — автоматически к 09:30\n\n"
         "Можно и точный адрес:\n"
         "• «адрес: Московское шоссе, 33 к 17:00»\n\n"
