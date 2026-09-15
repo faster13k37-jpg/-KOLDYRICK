@@ -66,8 +66,8 @@ HOME_ADDRESS = "Рязань, Шереметьевская улица, 10к3"
 HOME_STOP_NAME = "Дубовая Роща"
 
 # Сколько времени после будильника уходит на TikTok и сборы.
-TIKTOK_MINUTES = 10
-PREP_MINUTES = 90
+TIKTOK_MINUTES = 5
+PREP_MINUTES = 45
 
 # Рабочий график.
 WORK_START_HOUR = 9
